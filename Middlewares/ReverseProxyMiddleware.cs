@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DotNetCoreReverseProxy.Middlewares
@@ -28,16 +32,45 @@ namespace DotNetCoreReverseProxy.Middlewares
                 {
                     context.Response.StatusCode = (int)responseMessage.StatusCode;
                     CopyFromTargetResponseHeaders(context, responseMessage);
-                    await responseMessage.Content.CopyToAsync(context.Response.Body);
+                    await ProcessResponseContent(context, responseMessage);
                 }
                 return;
             }
             await _nextMiddleware(context);
         }
 
+        private async Task ProcessResponseContent(HttpContext context, HttpResponseMessage responseMessage)
+        {
+            var content = await responseMessage.Content.ReadAsByteArrayAsync();
+
+            if (IsContentOfType(responseMessage, "text/html") ||
+                IsContentOfType(responseMessage, "text/javascript"))
+            {
+                var stringContent = Encoding.UTF8.GetString(content);
+                await context.Response.WriteAsync(stringContent, Encoding.UTF8);
+            }
+            else
+            {
+                await context.Response.Body.WriteAsync(content);
+            }
+        }
+
+        private bool IsContentOfType(HttpResponseMessage responseMessage, string type)
+        {
+            var result = false;
+
+            if (responseMessage.Content?.Headers?.ContentType != null)
+            {
+                result = responseMessage.Content.Headers.ContentType.MediaType == type;
+            }
+
+            return result;
+        }
+
         private HttpRequestMessage CreateTargetMessage(HttpContext context, Uri targetUri)
         {
             var requestMessage = new HttpRequestMessage();
+
             CopyFromOriginalRequestContentAndHeaders(context, requestMessage);
 
             requestMessage.RequestUri = targetUri;
@@ -93,13 +126,7 @@ namespace DotNetCoreReverseProxy.Middlewares
 
         private Uri BuildTargetUri(HttpRequest request)
         {
-            Uri targetUri = null;
-
-            if (request.Path.StartsWithSegments("/googleforms", out var remainingPath))
-            {
-                targetUri = new Uri("https://docs.google.com/forms" + remainingPath);
-            }
-
+            Uri targetUri = new Uri(UriHelper.GetEncodedUrl(request));
             return targetUri;
         }
     }
