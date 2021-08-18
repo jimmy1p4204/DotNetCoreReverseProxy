@@ -127,6 +127,12 @@ namespace DotNetCoreReverseProxy.Middlewares
         private Uri BuildTargetUri(HttpRequest request)
         {
             Uri targetUri = new Uri(UriHelper.GetEncodedUrl(request));
+
+            if (request.Path.StartsWithSegments("/googleforms", out var remainingPath))
+            {
+                targetUri = new Uri("https://docs.google.com/forms" + remainingPath);
+            }
+
             return targetUri;
         }
     }
