@@ -5,17 +5,17 @@ EXPOSE 8080
 EXPOSE 8443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
-WORKDIR /src
+WORKDIR /src/dotnetcorereverseproxy
 COPY ["DotNetCoreReverseProxy.csproj", ""]
 RUN dotnet restore "./DotNetCoreReverseProxy.csproj"
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "DotNetCoreReverseProxy.csproj" -c Release -o /app/build
+WORKDIR "/src/dotnetcorereverseproxy"
+RUN dotnet build "DotNetCoreReverseProxy.csproj" -c Release -o /app/dotnetcorereverseproxy/build
 
 FROM build AS publish
-RUN dotnet publish "DotNetCoreReverseProxy.csproj" -c Release -o /app/publish
+RUN dotnet publish "DotNetCoreReverseProxy.csproj" -c Release -o /app/dotnetcorereverseproxy/publish
 
 FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
+WORKDIR /app/dotnetcorereverseproxy
+COPY --from=publish /app/dotnetcorereverseproxy/publish .
 ENTRYPOINT ["dotnet", "DotNetCoreReverseProxy.dll"]
