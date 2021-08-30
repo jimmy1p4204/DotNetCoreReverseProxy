@@ -33,15 +33,19 @@ namespace DotNetCoreReverseProxy
 
 			app.UseEndpoints(endpoints =>
 			{
-				endpoints.MapGet("/", async context =>
+				endpoints.MapGet("/test", async context =>
 				{
-					await context.Response.WriteAsync("Reverse Proxy Hello World!");
+					await context.Response.WriteAsync("This is Reverse Proxy Test. Hello World!");
 				});
+				//endpoints.MapGet("/", async context =>
+				//{
+				//	await context.Response.WriteAsync("Reverse Proxy Hello World!");
+				//});
 
-				endpoints.MapGet("/home", async context =>
-				{
-					await context.Response.WriteAsync("This is Reverse Proxy Home. Hello World!");
-				});
+				//endpoints.MapGet("/home", async context =>
+				//{
+				//	await context.Response.WriteAsync("This is Reverse Proxy Home. Hello World!");
+				//});
 			});
 		}
 	}

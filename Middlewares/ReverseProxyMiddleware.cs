@@ -135,10 +135,10 @@ namespace DotNetCoreReverseProxy.Middlewares
             {
                 targetUri = new Uri("https://docs.google.com/forms" + remainingPath);
             }
-            if (request.Path.StartsWithSegments("/proxy", out remainingPath))
-            {
-                targetUri = new Uri($"{orignalUri.Scheme}://localhost:3000/{orignalUri.PathAndQuery}");
-            }
+            //if (request.Path.StartsWithSegments("/proxy", out remainingPath))
+            //{
+            //    targetUri = new Uri($"{orignalUri.Scheme}://localhost:3000/{orignalUri.PathAndQuery}");
+            //}
 
 
             return targetUri;
