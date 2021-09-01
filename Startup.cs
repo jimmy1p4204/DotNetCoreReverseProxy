@@ -27,6 +27,7 @@ namespace DotNetCoreReverseProxy
 				app.UseDeveloperExceptionPage();
 			}
 
+			app.UseMiddleware<RestrictorMiddleware>();
 			app.UseMiddleware<ReverseProxyMiddleware>();
 
 			app.UseRouting();
