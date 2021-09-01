@@ -86,6 +86,7 @@ namespace DotNetCoreReverseProxy.Middlewares
 
                 // 未達限流 (取一個令牌)
                 _cache.Set(cacheKey, --count);
+                
                 return (true, "");
             }
         }
@@ -99,8 +100,12 @@ namespace DotNetCoreReverseProxy.Middlewares
 		private async Task HandleTimer(IMemoryCache cache, RestrictorSetting setting)
 		{
             var cacheKey = $"Restrictor.{setting.Target}";
-            cache.Set(cacheKey, setting.LimitTimes);
-            await Task.CompletedTask;
+            if (!_cache.TryGetValue(cacheKey, out int count)) 
+            {
+                cache.Set(cacheKey, setting.LimitTimes);
+                await Task.CompletedTask;
+            }
+                
         }
     }
 
