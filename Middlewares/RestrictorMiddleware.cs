@@ -23,6 +23,8 @@ namespace DotNetCoreReverseProxy.Middlewares
             new RestrictorSetting(){ Target = "/" },
             new RestrictorSetting(){ Target = "/Test" },
             new RestrictorSetting(){ Target = "/Home/Privacy" },
+            new RestrictorSetting(){ Target = "/api/Demo/Index" },
+            new RestrictorSetting(){ Target = "/api/Demo/Demo1" },
             new RestrictorSetting(){ Target = "/googleforms/d/e/1FAIpQLSdJwmxHIl_OCh-CI1J68G1EVSr9hKaYFLh3dHh8TLnxjxCJWw/viewform" },
         };
 
@@ -44,6 +46,7 @@ namespace DotNetCoreReverseProxy.Middlewares
                 // 達到限流回傳錯誤訊息
                 context.Response.ContentType = "application/json; charset=utf-8";
                 await context.Response.WriteAsync(errorMsg);
+                return;
             }
 
             await _nextMiddleware(context);
