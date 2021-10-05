@@ -135,6 +135,14 @@ namespace DotNetCoreReverseProxy.Middlewares
             {
                 targetUri = new Uri("https://docs.google.com/forms" + remainingPath);
             }
+            else if (request.Path.StartsWithSegments("/test", out remainingPath))
+            {
+                targetUri = null;
+            }
+            else if (request.Path.StartsWithSegments("/", out remainingPath))
+            {
+                targetUri = null;
+            }
             else 
             {
                 targetUri = new Uri($"{orignalUri.Scheme}://localhost:{orignalUri.Port}{orignalUri.PathAndQuery}");

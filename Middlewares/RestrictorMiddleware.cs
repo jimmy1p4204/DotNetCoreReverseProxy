@@ -21,6 +21,7 @@ namespace DotNetCoreReverseProxy.Middlewares
         private static List<RestrictorSetting> restrictorSettings = new List<RestrictorSetting>()
         {
             new RestrictorSetting(){ Target = "/" },
+            new RestrictorSetting(){ Target = "/Test" },
             new RestrictorSetting(){ Target = "/Home/Privacy" },
             new RestrictorSetting(){ Target = "/googleforms/d/e/1FAIpQLSdJwmxHIl_OCh-CI1J68G1EVSr9hKaYFLh3dHh8TLnxjxCJWw/viewform" },
         };
@@ -41,7 +42,8 @@ namespace DotNetCoreReverseProxy.Middlewares
             if (!isSuccess) 
             {
                 // 達到限流回傳錯誤訊息
-                await context.Response.WriteAsync(errorMsg, Encoding.UTF8);
+                context.Response.ContentType = "application/json; charset=utf-8";
+                await context.Response.WriteAsync(errorMsg);
             }
 
             await _nextMiddleware(context);
@@ -67,6 +69,8 @@ namespace DotNetCoreReverseProxy.Middlewares
             var cacheKey = $"Restrictor.{setting.Target}";
             if (!_cache.TryGetValue(cacheKey, out int count))
             {
+                _cache.Set(cacheKey, setting.LimitTimes);
+
                 // Create a timer with a two second interval.
                 var timer = new Timer(setting.LimitSec * 1000);
                 // Hook up the Elapsed event for the timer. 
@@ -100,12 +104,8 @@ namespace DotNetCoreReverseProxy.Middlewares
 		private async Task HandleTimer(IMemoryCache cache, RestrictorSetting setting)
 		{
             var cacheKey = $"Restrictor.{setting.Target}";
-            if (!_cache.TryGetValue(cacheKey, out int count)) 
-            {
-                cache.Set(cacheKey, setting.LimitTimes);
-                await Task.CompletedTask;
-            }
-                
+            cache.Set(cacheKey, setting.LimitTimes);
+            await Task.CompletedTask;
         }
     }
 
@@ -122,7 +122,7 @@ namespace DotNetCoreReverseProxy.Middlewares
         /// <summary>
         /// 時間(秒)
         /// </summary>
-		public int LimitSec { get; set; } = 10;
+		public int LimitSec { get; set; } = 20;
 
         /// <summary>
         /// 次數(秒)
